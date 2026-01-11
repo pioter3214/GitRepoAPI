@@ -15,11 +15,12 @@ public class ApiService {
     }
 
     public List<Repo> getAllRepos(String username){
-        return gitClient.fetchRepositories(username).stream()
-                .filter(repo -> repo.fork() == false)
-                .map(repo -> {
-                    List<Branch> branches = gitClient.fetchBranches(username,repo.name());
-                    return new Repo(repo.name(),repo.owner(), repo.fork(), branches);
-                }).toList();
+        List<Repo> repos = gitClient.fetchRepositories(username);
+
+        return repos.parallelStream().filter(repo -> repo.fork() == false).map(repo -> {
+            var branches = gitClient.fetchBranches(username,repo.name());
+            return new Repo(repo.name(),repo.owner(), repo.fork(), branches);
+        }).toList();
+
     }
 }
